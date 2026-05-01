@@ -1,8 +1,21 @@
 import fs from "fs";
 import path from "path";
+import os from "os";
 import { execSync, exec } from "child_process";
 import { log } from "../utils/logger.utils.js";
 import { generateTree } from "../utils/treeGenerator.utils.js";
+import { isGraphvizInstalled } from "../utils/dependencyChecker.utils.js";
+
+// ===== Helper =====
+function getInstallCommand() {
+  const platform = os.platform();
+
+  if (platform === "darwin") return "brew install graphviz";
+  if (platform === "linux") return "sudo apt install graphviz";
+  if (platform === "win32") return "winget install Graphviz.Graphviz";
+
+  return "https://graphviz.org/download/";
+}
 
 /**
  * Generate filename
@@ -166,7 +179,6 @@ function generateRoutesReadable(routes) {
  * Frontend meta
  */
 function generateFrontendMeta(edges, routes, outputDir) {
-  // 🔥 avoid empty meta file
   if ((!edges || edges.length === 0) && (!routes || routes.length === 0)) {
     return;
   }
@@ -214,7 +226,7 @@ export function exportGraph(graph, outputDir, options = {}) {
 
     const dotPath = path.join(outputDir, `${baseName}.dot`);
     const pngPath = path.join(outputDir, `${baseName}.png`);
-    const txtPath = path.join(outputDir, `${baseName}.txt`); // 🔥 FIX
+    const txtPath = path.join(outputDir, `${baseName}.txt`);
 
     const compDotPath = path.join(
       outputDir,
@@ -231,6 +243,8 @@ export function exportGraph(graph, outputDir, options = {}) {
 
     const mode = options.mode || "full";
 
+    const graphvizAvailable = isGraphvizInstalled();
+
     // ===== STRUCTURE =====
     fs.writeFileSync(treePath, generateTree(outputDir));
     log.success(`Structure: ${treePath}`);
@@ -238,17 +252,28 @@ export function exportGraph(graph, outputDir, options = {}) {
     // ===== BACKEND =====
     if (mode !== "frontend") {
       const dot = generateDOT(graph);
-      const readable = generateReadable(graph); // 🔥 FIX
+      const readable = generateReadable(graph);
 
       fs.writeFileSync(dotPath, dot);
-      fs.writeFileSync(txtPath, readable); // 🔥 FIX
+      fs.writeFileSync(txtPath, readable);
 
-      log.success(`Readable: ${txtPath}`); // 🔥 FIX
+      log.success(`Readable: ${txtPath}`);
 
-      try {
-        execSync(`dot -Tpng "${dotPath}" -o "${pngPath}"`);
-        log.success(`PNG: ${pngPath}`);
-      } catch {}
+      if (graphvizAvailable) {
+        try {
+          execSync(`dot -Tpng "${dotPath}" -o "${pngPath}"`);
+          log.success(`PNG: ${pngPath}`);
+        } catch {
+          log.warn("Failed to generate PNG using Graphviz");
+        }
+      } else {
+        log.warn(`
+Skipping PNG generation (Graphviz not installed)
+
+Install it using:
+${getInstallCommand()}
+`);
+      }
     }
 
     // ===== FRONTEND =====
@@ -262,10 +287,14 @@ export function exportGraph(graph, outputDir, options = {}) {
           generateComponentReadable(options.componentEdges),
         );
 
-        try {
-          execSync(`dot -Tpng "${compDotPath}" -o "${compPngPath}"`);
-          log.success(`Component PNG: ${compPngPath}`);
-        } catch {}
+        if (graphvizAvailable) {
+          try {
+            execSync(`dot -Tpng "${compDotPath}" -o "${compPngPath}"`);
+            log.success(`Component PNG: ${compPngPath}`);
+          } catch {
+            log.warn("Failed to generate component PNG");
+          }
+        }
       }
 
       if (options.routes?.length) {

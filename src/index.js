@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import path from "path";
+import os from "os";
 import { Command } from "commander";
 import chalk from "chalk";
 
@@ -12,6 +13,7 @@ import { buildGraph } from "./core/graphBuilder.core.js";
 import { exportGraph } from "./core/graphExporter.core.js";
 import { log } from "./utils/logger.utils.js";
 import { generateMeta } from "./core/metaGenerator.core.js";
+import { isGraphvizInstalled } from "./utils/dependencyChecker.utils.js";
 
 import { buildComponentGraph } from "./services/componentGraph.service.js";
 import { analyzeRoutes } from "./core/routeAnalyzer.core.js";
@@ -30,6 +32,17 @@ const banner =
   chalk.gray("Developed by Mayank Tripathi\n") +
   chalk.gray("GitHub: https://github.com/me-mayank\n");
 
+// ===== Helper =====
+function getInstallCommand() {
+  const platform = os.platform();
+
+  if (platform === "darwin") return "brew install graphviz";
+  if (platform === "linux") return "sudo apt install graphviz";
+  if (platform === "win32") return "winget install Graphviz.Graphviz";
+
+  return "https://graphviz.org/download/";
+}
+
 // ===== CLI Setup =====
 const program = new Command();
 
@@ -40,21 +53,9 @@ program
   .version("3.3.0")
   .argument("<path>", "Project directory to analyze")
 
-  // Output controls
-  // .option("--png", "Generate PNG graph")
-  // .option("--txt", "Generate readable report")
-  // .option("--dot", "Generate DOT file")
-  // .option("--struct", "Output file structure")
-  // .option("--summary", "Print summary only")
-
-  // Modes (FINAL)
   .option("--backend", "Backend mode (stable)")
   .option("--frontend", "Frontend mode (experimental)")
   .option("--full", "Full mode (backend + frontend (experimental))")
-
-  // // Misc
-  // .option("--quiet", "Minimal output")
-  // .option("--open", "Open PNG after generation")
 
   .addHelpText(
     "after",
@@ -105,10 +106,26 @@ const mode = options.backend
     ? "frontend"
     : options.full
       ? "full"
-      : "full"; // default
+      : "full";
 
 const runBackend = mode === "backend" || mode === "full";
 const runFrontend = mode === "frontend" || mode === "full";
+
+// ===== GRAPHVIZ CHECK =====
+let graphvizAvailable = true;
+
+if (runBackend) {
+  graphvizAvailable = isGraphvizInstalled();
+
+  if (!graphvizAvailable && !options.quiet) {
+    log.warn(`
+Graphviz not found. PNG generation will be skipped.
+
+Install it using:
+${getInstallCommand()}
+`);
+  }
+}
 
 // ===== USER MESSAGES =====
 if (!options.quiet) {

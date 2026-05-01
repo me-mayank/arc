@@ -7,3 +7,15 @@ export const log = {
   error: (msg) => console.log(chalk.red(`[ARC] ${msg}`)),
   plain: (msg) => console.log(msg), // no color (for summary mode)
 };
+
+export function warnGraphvizMissing() {
+  console.log(`
+⚠️ Graphviz not found. PNG generation will not work.
+
+Install it using:
+
+macOS: brew install graphviz  
+Linux: sudo apt install graphviz  
+Windows: winget install Graphviz.Graphviz
+`);
+}
