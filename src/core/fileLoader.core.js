@@ -8,7 +8,10 @@ import { shouldIgnore } from "../utils/fileFilter.utils.js";
  * @param {string[]} extensions - allowed file extensions
  * @returns {string[]} list of file paths
  */
-export function getAllFiles(dirPath, extensions = [".js"]) {
+export function getAllFiles(
+  dirPath,
+  extensions = [".js", ".jsx", ".ts", ".tsx"],
+) {
   let results = [];
 
   try {

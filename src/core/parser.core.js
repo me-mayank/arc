@@ -1,24 +1,23 @@
 import fs from "fs";
-import parser from "@babel/parser";
+import * as babelParser from "@babel/parser";
 
 /**
- * Parses a JS file into AST
- * @param {string} filePath
- * @returns {object|null} AST
+ * Parses a JS/TS/JSX/TSX file into AST
  */
 export function parseFile(filePath) {
   try {
     const code = fs.readFileSync(filePath, "utf-8");
 
-    const ast = parser.parse(code, {
+    const ast = babelParser.parse(code, {
       sourceType: "module",
-      plugins: ["jsx"],
+      plugins: ["jsx", "typescript", "classProperties", "dynamicImport"],
+      errorRecovery: true, // 🔥 prevents hard crashes
     });
 
     return ast;
   } catch (error) {
-    console.error(`❌ Failed to parse: ${filePath}`);
-    console.error(error.message);
+    // ❗ suppress noisy logs, but still debug if needed
+    // console.error(`Failed to parse: ${filePath}`);
     return null;
   }
 }

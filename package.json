@@ -1,17 +1,24 @@
 {
-  "name": "cdv",
-  "version": "1.0.0",
-  "description": "Code Dependency Visualiser ",
-  "main": "index.js",
+  "name": "@me-mayank/arc",
+  "version": "3.2.0",
+  "description": "Architecture Relationship Compiler (ARC) - visualize and understand code dependencies",
+  "main": "src/index.js",
   "type": "module",
   "bin": {
-    "arc": "./src/index.js"
+    "arc": "src/index.js"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node src/index.js"
   },
+  "keywords": [
+    "cli",
+    "dependency-graph",
+    "architecture",
+    "code-visualization",
+    "arc"
+  ],
   "author": "Mayank Tripathi",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
     "@babel/parser": "^7.29.3",
     "chalk": "^5.6.2",

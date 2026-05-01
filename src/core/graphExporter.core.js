@@ -13,66 +13,7 @@ function generateFileName(outputDir) {
 }
 
 /**
- * Convert graph → DOT format
- */
-function generateDOT(graph) {
-  let dot = "digraph G {\n";
-
-  dot += "  rankdir=TB;\n";
-  dot += "  nodesep=0.8;\n";
-  dot += "  ranksep=1.2;\n\n";
-
-  dot += "  node [shape=box, style=filled, fontname=Helvetica];\n\n";
-
-  const entry =
-    Object.keys(graph).find((f) => f.includes("index.js")) ||
-    Object.keys(graph)[0];
-
-  dot += `  "${entry}" [fillcolor=gold];\n\n`;
-
-  const modules = {};
-
-  for (const file in graph) {
-    if (file === entry) continue;
-
-    const parts = file.split(path.sep);
-    const folder = parts.length > 1 ? parts[0] : "others";
-
-    if (!modules[folder]) modules[folder] = [];
-    modules[folder].push(file);
-  }
-
-  let clusterId = 0;
-
-  for (const module in modules) {
-    dot += `  subgraph cluster_${clusterId++} {\n`;
-    dot += `    label = "${module}";\n`;
-    dot += "    style=rounded;\n";
-    dot += "    color=lightgrey;\n";
-
-    modules[module].forEach((file) => {
-      const deps = graph[file];
-      const color = deps.length === 0 ? "lightgreen" : "lightcoral";
-      dot += `    "${file}" [fillcolor=${color}];\n`;
-    });
-
-    dot += "  }\n\n";
-  }
-
-  dot += `  { rank=source; "${entry}"; }\n\n`;
-
-  for (const file in graph) {
-    graph[file].forEach((dep) => {
-      dot += `  "${file}" -> "${dep}" [color=gray30];\n`;
-    });
-  }
-
-  dot += "}\n";
-  return dot;
-}
-
-/**
- * Human readable
+ * 🔥 NEW: Backend readable (FIX)
  */
 function generateReadable(graph) {
   let output = "Dependency Summary\n\n";
@@ -80,7 +21,7 @@ function generateReadable(graph) {
   for (const file in graph) {
     output += `${file}\n`;
 
-    if (graph[file].length === 0) {
+    if (!graph[file] || graph[file].length === 0) {
       output += "  └─ No dependencies\n";
     } else {
       graph[file].forEach((dep, i) => {
@@ -96,87 +37,242 @@ function generateReadable(graph) {
 }
 
 /**
- * Open file helper
+ * Backend DOT
  */
-function openFile(filePath) {
-  const cmd =
-    process.platform === "darwin"
-      ? `open "${filePath}"`
-      : process.platform === "win32"
-        ? `start "" "${filePath}"`
-        : `xdg-open "${filePath}"`;
+function generateDOT(graph) {
+  let dot = "digraph G {\n";
 
-  exec(cmd);
+  dot += `
+  rankdir=LR;
+  splines=polyline;
+  overlap=false;
+  nodesep=0.5;
+  ranksep=1;
+
+  node [shape=box, style="rounded"];
+  edge [color="#6b7280"];
+  \n`;
+
+  function shortName(file) {
+    return file.split("/").pop();
+  }
+
+  for (const file in graph) {
+    dot += `"${file}" [label="${shortName(file)}"];\n`;
+  }
+
+  for (const file in graph) {
+    graph[file].forEach((dep) => {
+      if (!dep) return;
+      dot += `"${file}" -> "${dep}";\n`;
+    });
+  }
+
+  dot += "}\n";
+  return dot;
 }
 
 /**
- * Export graph
+ * Component DOT
+ */
+function generateComponentDOT(edges) {
+  if (!edges || edges.length === 0) {
+    return `digraph G {\n  label="No components found";\n}`;
+  }
+
+  let dot = "digraph G {\n";
+
+  dot += `
+  rankdir=LR;
+  splines=polyline;
+  overlap=false;
+  nodesep=0.6;
+  ranksep=1;
+
+  node [shape=box, style="rounded"];
+  edge [color="#6b7280"];
+  \n`;
+
+  const seen = new Set();
+
+  edges.forEach(({ parentComponent, childComponent }) => {
+    seen.add(parentComponent);
+    seen.add(childComponent);
+  });
+
+  seen.forEach((c) => {
+    dot += `"${c}" [label="${c}"];\n`;
+  });
+
+  edges.forEach(({ parentComponent, childComponent }) => {
+    if (parentComponent !== childComponent) {
+      dot += `"${parentComponent}" -> "${childComponent}";\n`;
+    }
+  });
+
+  dot += "}\n";
+
+  return dot;
+}
+
+/**
+ * Component readable
+ */
+function generateComponentReadable(edges) {
+  if (!edges || edges.length === 0) {
+    return "Component Relationships\n\n(No components found)\n";
+  }
+
+  let output = "Component Relationships\n\n";
+  const map = {};
+
+  edges.forEach(({ parentComponent, childComponent }) => {
+    if (!map[parentComponent]) map[parentComponent] = new Set();
+    map[parentComponent].add(childComponent);
+  });
+
+  for (const parent in map) {
+    output += parent + "\n";
+
+    [...map[parent]].forEach((child, i, arr) => {
+      const symbol = i === arr.length - 1 ? "└─" : "├─";
+      output += `  ${symbol} ${child}\n`;
+    });
+
+    output += "\n";
+  }
+
+  return output;
+}
+
+/**
+ * Routes readable
+ */
+function generateRoutesReadable(routes) {
+  if (!routes || routes.length === 0) {
+    return "Routes\n\n(No routes found)\n";
+  }
+
+  let output = "Routes\n\n";
+
+  routes.forEach((r) => {
+    output += `${r.route} → ${r.file}\n`;
+  });
+
+  return output;
+}
+
+/**
+ * Frontend meta
+ */
+function generateFrontendMeta(edges, routes, outputDir) {
+  // 🔥 avoid empty meta file
+  if ((!edges || edges.length === 0) && (!routes || routes.length === 0)) {
+    return;
+  }
+
+  const meta = {
+    components: {},
+    routes: [],
+  };
+
+  edges?.forEach(({ parentComponent, childComponent, parentFile }) => {
+    if (!meta.components[parentComponent]) {
+      meta.components[parentComponent] = {
+        file: parentFile,
+        uses: [],
+      };
+    }
+
+    meta.components[parentComponent].uses.push(childComponent);
+  });
+
+  routes?.forEach((r) => {
+    meta.routes.push({
+      path: r.route,
+      file: r.file,
+    });
+  });
+
+  const projectName = path.basename(outputDir);
+  const metaPath = path.join(
+    outputDir,
+    `${projectName}-arc-frontend-meta.json`,
+  );
+
+  fs.writeFileSync(metaPath, JSON.stringify(meta, null, 2));
+  log.success(`Frontend Meta: ${metaPath}`);
+}
+
+/**
+ * EXPORT
  */
 export function exportGraph(graph, outputDir, options = {}) {
   try {
     const baseName = generateFileName(outputDir);
-
-    const dotTxtPath = path.join(outputDir, `${baseName}.dot.txt`);
-    const readablePath = path.join(outputDir, `${baseName}.txt`);
-    const pngPath = path.join(outputDir, `${baseName}.png`);
-    const tempDotPath = path.join(outputDir, `${baseName}.dot`);
-
-    // ✅ CORRECT structure naming (single source)
     const projectName = path.basename(outputDir);
+
+    const dotPath = path.join(outputDir, `${baseName}.dot`);
+    const pngPath = path.join(outputDir, `${baseName}.png`);
+    const txtPath = path.join(outputDir, `${baseName}.txt`); // 🔥 FIX
+
+    const compDotPath = path.join(
+      outputDir,
+      `${projectName}-arc-components.dot`,
+    );
+    const compPngPath = path.join(
+      outputDir,
+      `${projectName}-arc-components.png`,
+    );
+
     const treePath = path.join(outputDir, `${projectName}-arc-structure.txt`);
+    const routePath = path.join(outputDir, `${projectName}-arc-routes.txt`);
+    const compTxt = path.join(outputDir, `${projectName}-arc-components.txt`);
 
-    const dotContent = generateDOT(graph);
-    const readableContent = generateReadable(graph);
+    const mode = options.mode || "full";
 
-    // SUMMARY MODE
-    if (options.summary) {
-      console.log(readableContent);
-      return;
-    }
+    // ===== STRUCTURE =====
+    fs.writeFileSync(treePath, generateTree(outputDir));
+    log.success(`Structure: ${treePath}`);
 
-    // ✅ include struct in mode detection
-    const specificMode =
-      options.png || options.txt || options.dot || options.struct;
+    // ===== BACKEND =====
+    if (mode !== "frontend") {
+      const dot = generateDOT(graph);
+      const readable = generateReadable(graph); // 🔥 FIX
 
-    // TXT
-    if (options.txt || !specificMode) {
-      fs.writeFileSync(readablePath, readableContent);
-      if (!options.quiet) log.success(`Readable: ${readablePath}`);
-    }
+      fs.writeFileSync(dotPath, dot);
+      fs.writeFileSync(txtPath, readable); // 🔥 FIX
 
-    // DOT
-    if (options.dot || !specificMode) {
-      fs.writeFileSync(dotTxtPath, dotContent);
-      if (!options.quiet) log.success(`DOT: ${dotTxtPath}`);
-    }
+      log.success(`Readable: ${txtPath}`); // 🔥 FIX
 
-    // STRUCTURE
-    if (options.struct || !specificMode) {
-      const treeContent = generateTree(outputDir);
-      fs.writeFileSync(treePath, treeContent);
-
-      if (!options.quiet) log.success(`Structure: ${treePath}`);
-    }
-
-    // PNG
-    if (options.png || !specificMode) {
       try {
-        fs.writeFileSync(tempDotPath, dotContent);
+        execSync(`dot -Tpng "${dotPath}" -o "${pngPath}"`);
+        log.success(`PNG: ${pngPath}`);
+      } catch {}
+    }
 
-        execSync(`dot -Tpng "${tempDotPath}" -o "${pngPath}"`, {
-          stdio: "ignore",
-        });
+    // ===== FRONTEND =====
+    if (mode !== "backend") {
+      if (options.componentEdges?.length) {
+        const compDot = generateComponentDOT(options.componentEdges);
 
-        fs.unlinkSync(tempDotPath);
+        fs.writeFileSync(compDotPath, compDot);
+        fs.writeFileSync(
+          compTxt,
+          generateComponentReadable(options.componentEdges),
+        );
 
-        if (!options.quiet) log.success(`PNG: ${pngPath}`);
-
-        if (options.open) {
-          openFile(pngPath);
-        }
-      } catch {
-        if (!options.quiet) log.warn("Graphviz not found → PNG not generated");
+        try {
+          execSync(`dot -Tpng "${compDotPath}" -o "${compPngPath}"`);
+          log.success(`Component PNG: ${compPngPath}`);
+        } catch {}
       }
+
+      if (options.routes?.length) {
+        fs.writeFileSync(routePath, generateRoutesReadable(options.routes));
+      }
+
+      generateFrontendMeta(options.componentEdges, options.routes, outputDir);
     }
   } catch (error) {
     log.error("Failed to export graph");
