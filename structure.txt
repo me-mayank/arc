@@ -1,0 +1,24 @@
+.
+├── output
+├── package-lock.json
+├── package.json
+├── src
+│   ├── api
+│   ├── config
+│   │   └── constants.config.js
+│   ├── core
+│   │   ├── dependencyExtractor.core.js
+│   │   ├── fileLoader.core.js
+│   │   ├── graphBuilder.core.js
+│   │   ├── graphExporter.core.js
+│   │   └── parser.core.js
+│   ├── index.js
+│   ├── services
+│   │   └── analysis.service.js
+│   └── utils
+│       ├── fileFilter.utils.js
+│       ├── logger.utils.js
+│       └── pathResolver.utils.js
+└── structure.txt
+
+8 directories, 14 files
