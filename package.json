@@ -1,6 +1,6 @@
 {
   "name": "@me-mayank/arc",
-  "version": "3.2.2",
+  "version": "3.2.3",
   "description": "Architecture Relationship Compiler (ARC) - visualize and understand code dependencies",
   "main": "src/index.js",
   "type": "module",
