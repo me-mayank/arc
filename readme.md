@@ -8,14 +8,14 @@ It helps you understand dependencies, explore unfamiliar projects, and reason ab
 
 ## 🚀 Quick Start
 
-```bash
+```bash id="1j1q5k"
 npm install -g @me-mayank/arc
 arc . --backend
 ```
 
 Or run without installing:
 
-```bash
+```bash id="t6r3r0"
 npx @me-mayank/arc . --backend
 ```
 
@@ -30,6 +30,18 @@ ARC analyzes your project and generates:
 - Project structure
 
 Instead of manually tracing imports, ARC gives you a **clear architectural overview instantly**.
+
+---
+
+## 🧩 Supported Environments
+
+ARC is currently designed for:
+
+- JavaScript
+- Node.js projects
+- React (basic frontend support)
+
+> ⚠️ Other languages are not supported yet.
 
 ---
 
@@ -49,13 +61,13 @@ Instead of passing large parts of a codebase, ARC lets you provide **focused, st
 
 ## 📌 Usage
 
-```bash
+```bash id="z5z7wy"
 arc <path> [mode]
 ```
 
 Example:
 
-```bash
+```bash id="l9c7g2"
 arc . --backend
 ```
 
@@ -65,7 +77,7 @@ arc . --backend
 
 ### Backend Mode (Stable)
 
-```bash
+```bash id="r6r1nf"
 arc . --backend
 ```
 
@@ -77,7 +89,7 @@ arc . --backend
 
 ### Frontend Mode (Experimental)
 
-```bash
+```bash id="6c7u3g"
 arc . --frontend
 ```
 
@@ -90,7 +102,7 @@ arc . --frontend
 
 ### Full Mode
 
-```bash
+```bash id="g3b2g4"
 arc . --full
 ```
 
@@ -125,19 +137,19 @@ If not installed:
 
 **macOS**
 
-```bash
+```bash id="1dx0q4"
 brew install graphviz
 ```
 
 **Linux**
 
-```bash
+```bash id="o0k5x8"
 sudo apt install graphviz
 ```
 
 **Windows**
 
-```bash
+```bash id="7lb4tt"
 winget install Graphviz.Graphviz
 ```
 
@@ -145,7 +157,7 @@ winget install Graphviz.Graphviz
 
 ## 🔍 Verify Installation
 
-```bash
+```bash id="v6r9ht"
 dot -V
 ```
 
@@ -157,19 +169,19 @@ If `dot` is not recognized after installing Graphviz:
 
 1. Open **System Environment Variables**
 2. Click **Environment Variables**
-3. Under **System Variables**, find and select `Path`
+3. Under **System Variables**, select `Path`
 4. Click **Edit**
-5. Add this path:
+5. Add:
 
 ```
 C:\Program Files\Graphviz\bin
 ```
 
-6. Click OK and restart your terminal
+6. Restart your terminal
 
 Then verify again:
 
-```bash
+```bash id="3p1g6g"
 dot -V
 ```
 
@@ -177,7 +189,7 @@ dot -V
 
 ## 🧩 Example Workflow
 
-```bash
+```bash id="1c3c3p"
 cd your-project
 arc . --backend
 ```
