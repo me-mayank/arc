@@ -270,8 +270,31 @@ export function exportGraph(graph, outputDir, options = {}) {
         log.warn(`
 Skipping PNG generation (Graphviz not installed)
 
-Install it using:
-${getInstallCommand()}
+Install Graphviz:
+
+macOS:
+  brew install graphviz
+
+Linux:
+  sudo apt install graphviz
+
+Windows:
+  winget install Graphviz.Graphviz
+
+After installing, verify:
+  dot -V
+
+If 'dot' is not recognized on Windows:
+
+1. Open System Environment Variables
+2. Edit the 'Path' variable
+3. Add:
+   C:\\Program Files\\Graphviz\\bin
+
+4. Restart your terminal
+
+Then run again:
+  dot -V
 `);
       }
     }
