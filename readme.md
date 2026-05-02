@@ -1,33 +1,19 @@
 # ARC — Architecture Relationship Compiler
 
-ARC is a developer CLI tool that analyzes your codebase and visualizes how files are connected.
+ARC is a CLI tool that analyzes your codebase and visualizes how files are connected.
+
 It helps you understand dependencies, explore unfamiliar projects, and reason about architecture quickly.
 
 ---
 
-## 🚀 Why ARC?
-
-When working with large codebases, understanding how files interact becomes difficult.
-
-ARC solves this by:
-
-- Automatically analyzing file dependencies
-- Generating visual graphs of relationships
-- Producing readable summaries of your architecture
-
-Instead of manually tracing imports, ARC gives you a **clear structural overview instantly**.
-
----
-
-## ⚙️ Installation
-
-Install globally using npm:
+## 🚀 Quick Start
 
 ```bash
 npm install -g @me-mayank/arc
+arc . --backend
 ```
 
-Or run directly without installing:
+Or run without installing:
 
 ```bash
 npx @me-mayank/arc . --backend
@@ -35,9 +21,39 @@ npx @me-mayank/arc . --backend
 
 ---
 
+## 📌 What ARC Does
+
+ARC analyzes your project and generates:
+
+- Dependency graphs
+- Readable summaries
+- Project structure
+
+Instead of manually tracing imports, ARC gives you a **clear architectural overview instantly**.
+
+---
+
+## 🤖 Why ARC is Useful with AI
+
+Modern AI tools require relevant code context to generate accurate results.
+
+ARC helps by:
+
+- Identifying only the relevant files and dependencies
+- Reducing the amount of code you need to share with AI tools
+- Improving the quality of AI-generated responses
+
+Instead of passing large parts of a codebase, ARC lets you provide **focused, structured context**, making AI-assisted development more efficient.
+
+---
+
 ## 📌 Usage
 
-Run ARC inside your project directory:
+```bash
+arc <path> [mode]
+```
+
+Example:
 
 ```bash
 arc . --backend
@@ -47,66 +63,65 @@ arc . --backend
 
 ## 🧠 Modes
 
-### 🔹 Backend Mode (Stable)
-
-Analyzes file-level dependencies and generates:
-
-- Dependency graph
-- Readable report
-- Project structure
-- Metadata
+### Backend Mode (Stable)
 
 ```bash
 arc . --backend
 ```
 
+- File-level dependency analysis
+- Graph generation
+- Metadata output
+
 ---
 
-### 🔹 Frontend Mode (Experimental)
-
-Analyzes:
-
-- Component relationships
-- Basic routing structure
+### Frontend Mode (Experimental)
 
 ```bash
 arc . --frontend
 ```
 
+- Component relationships
+- Basic route analysis
+
+> ⚠️ Frontend analysis is experimental and may produce incomplete results.
+
 ---
 
-### 🔹 Full Mode
-
-Runs both backend and frontend analysis:
+### Full Mode
 
 ```bash
 arc . --full
 ```
 
+Runs both backend and frontend analysis.
+
 ---
 
-## 📂 Output Files
+## 📂 Output
 
-After execution, ARC generates:
+ARC generates:
 
-- **PNG Graph** → Visual dependency graph
-- **DOT File** → Graph structure for customization
-- **Text Report** → Readable dependency summary
-- **Structure File** → Project folder structure
-- **Metadata JSON** → Machine-readable analysis
+- **PNG Graph** — Visual dependency graph (requires Graphviz)
+- **DOT File** — Graph structure
+- **Text Report** — Readable dependency summary
+- **Structure File** — Project directory structure
+- **Metadata JSON** — Machine-readable analysis
 
 ---
 
 ## ⚠️ Graphviz Requirement
 
-ARC uses Graphviz to generate PNG graphs.
+Graphviz is required to generate PNG graphs.
 
-If Graphviz is not installed:
+If not installed:
 
-- PNG generation will be skipped
-- Other outputs will still work
+- PNG generation is skipped
+- Other outputs still work
 
-Install Graphviz:
+---
+
+## 📦 Install Graphviz
 
 **macOS**
 
@@ -128,6 +143,38 @@ winget install Graphviz.Graphviz
 
 ---
 
+## 🔍 Verify Installation
+
+```bash
+dot -V
+```
+
+---
+
+## 🪟 Windows PATH Fix
+
+If `dot` is not recognized after installing Graphviz:
+
+1. Open **System Environment Variables**
+2. Click **Environment Variables**
+3. Under **System Variables**, find and select `Path`
+4. Click **Edit**
+5. Add this path:
+
+```
+C:\Program Files\Graphviz\bin
+```
+
+6. Click OK and restart your terminal
+
+Then verify again:
+
+```bash
+dot -V
+```
+
+---
+
 ## 🧩 Example Workflow
 
 ```bash
@@ -137,41 +184,25 @@ arc . --backend
 
 You will get:
 
-- Visual graph of dependencies
+- Dependency graph
 - Text summary
-- Project structure overview
+- Project structure
 
 ---
 
-## 🛠️ When to Use ARC
+## 📄 Documentation
 
-ARC is useful for:
-
-- Exploring unfamiliar codebases
-- Debugging dependency issues
-- Understanding project architecture
-- Onboarding into new projects
-
----
-
-## ⚠️ Notes
-
-- Backend analysis is stable and recommended
-- Frontend analysis is experimental
-- Large projects may produce dense graphs
+👉 https://bit.ly/arc_docs
 
 ---
 
 ## 👨‍💻 Author
 
-**Mayank Tripathi**
-
-GitHub: https://github.com/me-mayank
+Mayank Tripathi
+https://github.com/me-mayank
 
 ---
 
 ## ⭐ Support
 
-If you find ARC useful, consider starring the repository and sharing it.
-
----
+If you find ARC useful, consider starring the repository.
