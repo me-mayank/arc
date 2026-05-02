@@ -17,7 +17,7 @@ import { isGraphvizInstalled } from "./utils/dependencyChecker.utils.js";
 
 import { buildComponentGraph } from "./services/componentGraph.service.js";
 import { analyzeRoutes } from "./core/routeAnalyzer.core.js";
-
+import { getGraphvizHelpMessage } from "./utils/dependencyChecker.utils.js";
 // ===== Banner =====
 const banner =
   chalk.cyan(`
@@ -107,35 +107,7 @@ if (runBackend) {
   graphvizAvailable = isGraphvizInstalled();
 
   if (!graphvizAvailable && !options.quiet) {
-    log.warn(`
-Graphviz not found. PNG generation will be skipped.
-
-Install Graphviz:
-
-macOS:
-  brew install graphviz
-
-Linux:
-  sudo apt install graphviz
-
-Windows:
-  winget install Graphviz.Graphviz
-
-After installing, verify:
-  dot -V
-
-If 'dot' is not recognized on Windows:
-
-1. Open System Environment Variables
-2. Edit the 'Path' variable
-3. Add:
-   C:\\Program Files\\Graphviz\\bin
-
-4. Restart your terminal
-
-Then run again:
-  dot -V
-`);
+    log.warn(getGraphvizHelpMessage());
   }
 }
 
